@@ -1,0 +1,121 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users collection - users can only access their own data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.firebaseUid;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.firebaseUid;
+    }
+    
+    // User profiles collection - users can only access their own profile
+    match /userProfiles/{profileId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == getUserFirebaseUid(resource.data.userId);
+      allow create: if request.auth != null && 
+        request.auth.uid == getUserFirebaseUid(request.resource.data.userId);
+    }
+    
+    // Careers collection - read-only for all authenticated users
+    match /careers/{careerId} {
+      allow read: if request.auth != null;
+      // Only allow writes from admin/system (for seeding)
+      allow write: if false; // Disable direct writes, use admin SDK for seeding
+    }
+    
+    // Career matches - users can only access their own matches
+    match /careerMatches/{matchId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == getUserFirebaseUid(resource.data.userId);
+      allow create: if request.auth != null && 
+        request.auth.uid == getUserFirebaseUid(request.resource.data.userId);
+    }
+    
+    // Roadmaps - users can only access their own roadmaps
+    match /roadmaps/{roadmapId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == getUserFirebaseUid(resource.data.userId);
+      allow create: if request.auth != null && 
+        request.auth.uid == getUserFirebaseUid(request.resource.data.userId);
+    }
+    
+    // User progress - users can only access their own progress
+    match /userProgress/{progressId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == getUserFirebaseUid(resource.data.userId);
+      allow create: if request.auth != null && 
+        request.auth.uid == getUserFirebaseUid(request.resource.data.userId);
+    }
+    
+    // Learning resources - read-only for all authenticated users
+    match /learningResources/{resourceId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Admin only
+    }
+    
+    // Helper function to get Firebase UID from user ID
+    function getUserFirebaseUid(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data.firebaseUid;
+    }
+    
+    // Admin functions for system operations
+    function isAdmin() {
+      // Define admin UIDs here or use custom claims
+      return request.auth.uid in [
+        // Add admin UIDs here when needed
+      ];
+    }
+    
+    // Validate user profile data
+    function isValidProfile(profile) {
+      return profile.keys().hasAll(['userId', 'title']) &&
+        profile.userId is string &&
+        profile.title is string &&
+        (profile.interests is list ? profile.interests.size() <= 20 : true) &&
+        (profile.skills is list ? profile.skills.size() <= 50 : true);
+    }
+    
+    // Validate career match data
+    function isValidCareerMatch(match) {
+      return match.keys().hasAll(['userId', 'careerId', 'compatibilityScore']) &&
+        match.userId is string &&
+        match.careerId is string &&
+        match.compatibilityScore is number &&
+        match.compatibilityScore >= 0 &&
+        match.compatibilityScore <= 100;
+    }
+    
+    // Validate roadmap data
+    function isValidRoadmap(roadmap) {
+      return roadmap.keys().hasAll(['userId', 'careerId', 'title']) &&
+        roadmap.userId is string &&
+        roadmap.careerId is string &&
+        roadmap.title is string &&
+        (roadmap.milestones is list ? roadmap.milestones.size() <= 20 : true);
+    }
+    
+    // Rate limiting - simple approach using timestamps
+    function isNotSpamming() {
+      return request.time > resource.data.lastUpdated + duration.value(1, 's');
+    }
+    
+    // Additional validation rules
+    match /userProfiles/{profileId} {
+      allow write: if request.auth != null && 
+        request.auth.uid == getUserFirebaseUid(resource.data.userId) &&
+        isValidProfile(request.resource.data) &&
+        isNotSpamming();
+    }
+    
+    match /careerMatches/{matchId} {
+      allow create: if request.auth != null && 
+        request.auth.uid == getUserFirebaseUid(request.resource.data.userId) &&
+        isValidCareerMatch(request.resource.data);
+    }
+    
+    match /roadmaps/{roadmapId} {
+      allow write: if request.auth != null && 
+        request.auth.uid == getUserFirebaseUid(resource.data.userId) &&
+        isValidRoadmap(request.resource.data);
+    }
+  }
+}
