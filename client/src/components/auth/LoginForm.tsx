@@ -7,10 +7,20 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { signInWithEmail, signUpWithEmail, signInWithGoogle } from '@/services/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/components/auth/AuthProvider';
+import { useLocation } from 'wouter';
 
 export function LoginForm() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const [, setLocation] = useLocation();
+
+  // Redirect to dashboard if user is logged in
+  if (user) {
+    setLocation('/dashboard');
+    return null;
+  }
 
   const handleEmailAuth = async (email: string, password: string, isSignUp: boolean) => {
     setLoading(true);
@@ -21,12 +31,14 @@ export function LoginForm() {
           title: "Account created successfully",
           description: "Welcome to AI Career Advisor!",
         });
+        setLocation('/onboarding'); // <-- Add this line
       } else {
         await signInWithEmail(email, password);
         toast({
           title: "Signed in successfully",
           description: "Welcome back!",
         });
+        setLocation('/dashboard'); // <-- Add this line for sign in
       }
     } catch (error: any) {
       toast({
@@ -124,12 +136,34 @@ export function LoginForm() {
                 onSubmit={(e) => {
                   e.preventDefault();
                   const formData = new FormData(e.currentTarget);
+                  const name = formData.get('name') as string;
                   const email = formData.get('email') as string;
+                  const phone = formData.get('phone') as string;
                   const password = formData.get('password') as string;
+                  const confirmPassword = formData.get('confirmPassword') as string;
+                  if (password !== confirmPassword) {
+                    toast({
+                      title: "Passwords do not match",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
                   handleEmailAuth(email, password, true);
+                  // TODO: Save name and phone to profile after signup
                 }}
                 className="space-y-4"
               >
+                <div className="space-y-2">
+                  <Label htmlFor="signup-name">Name</Label>
+                  <Input
+                    id="signup-name"
+                    name="name"
+                    type="text"
+                    placeholder="Enter your name"
+                    required
+                    data-testid="input-signup-name"
+                  />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
                   <Input
@@ -142,6 +176,17 @@ export function LoginForm() {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="signup-phone">Phone Number</Label>
+                  <Input
+                    id="signup-phone"
+                    name="phone"
+                    type="tel"
+                    placeholder="Enter your phone number"
+                    required
+                    data-testid="input-signup-phone"
+                  />
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="signup-password">Password</Label>
                   <Input
                     id="signup-password"
@@ -150,6 +195,17 @@ export function LoginForm() {
                     placeholder="Create a password"
                     required
                     data-testid="input-signup-password"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-confirm-password">Confirm Password</Label>
+                  <Input
+                    id="signup-confirm-password"
+                    name="confirmPassword"
+                    type="password"
+                    placeholder="Confirm your password"
+                    required
+                    data-testid="input-signup-confirm-password"
                   />
                 </div>
                 <Button 

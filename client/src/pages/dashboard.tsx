@@ -1,17 +1,33 @@
 import { Dashboard } from '@/components/dashboard/Dashboard';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useLocation } from 'wouter';
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { Button } from '@/components/ui/button';
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!loading && !user) {
       setLocation('/auth');
     }
   }, [user, loading, setLocation]);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    if (menuOpen) {
+      document.addEventListener('mousedown', handleClick);
+    }
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [menuOpen]);
 
   if (loading) {
     return (
@@ -46,15 +62,19 @@ export default function DashboardPage() {
             </div>
             
             <nav className="hidden md:flex items-center space-x-8">
-              <a href="#dashboard" className="text-foreground font-medium">Dashboard</a>
-              <a href="#careers" className="text-muted-foreground hover:text-foreground transition-colors">Career Match</a>
-              <a href="#roadmap" className="text-muted-foreground hover:text-foreground transition-colors">Roadmap</a>
-              <a href="#profile" className="text-muted-foreground hover:text-foreground transition-colors">Profile</a>
+              <button className="text-foreground font-medium bg-transparent border-none cursor-pointer" onClick={() => setLocation('/dashboard')}>Dashboard</button>
+              <button className="text-muted-foreground hover:text-foreground transition-colors bg-transparent border-none cursor-pointer" onClick={() => setLocation('/careers')}>Career Match</button>
+              <button className="text-muted-foreground hover:text-foreground transition-colors bg-transparent border-none cursor-pointer" onClick={() => setLocation('/roadmap')}>Roadmap</button>
+              <button className="text-muted-foreground hover:text-foreground transition-colors bg-transparent border-none cursor-pointer" onClick={() => setLocation('/profile')}>Profile</button>
             </nav>
             
             <div className="flex items-center space-x-4">
-              <div className="relative">
-                <button className="flex items-center space-x-2 p-2 rounded-lg hover:bg-secondary transition-colors">
+              <div className="relative" ref={menuRef}>
+                <button
+                  className="flex items-center space-x-2 p-2 rounded-lg hover:bg-secondary transition-colors"
+                  onClick={() => setMenuOpen((open) => !open)}
+                  aria-label="Account menu"
+                >
                   <img 
                     src={user.photoURL || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150&q=80"} 
                     alt="Profile" 
@@ -65,6 +85,33 @@ export default function DashboardPage() {
                   </span>
                   <i className="fas fa-chevron-down text-xs text-muted-foreground"></i>
                 </button>
+                {menuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-lg z-50">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start px-4 py-2 text-left"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        setLocation('/profile/edit');
+                      }}
+                    >
+                      Edit Profile
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start px-4 py-2 text-left"
+                      onClick={async () => {
+                        setMenuOpen(false);
+                        // Sign out and go to landing page
+                        const { logOut } = await import('@/services/firebase');
+                        await logOut();
+                        setLocation('/');
+                      }}
+                    >
+                      Sign Out
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -22,11 +22,25 @@ interface RoadmapData {
   totalProgress: number;
 }
 
+const sampleRoadmap = {
+  id: "sample",
+  title: "Data Scientist Roadmap",
+  description: "Steps to become a Data Scientist.",
+  milestones: [
+    { id: "m1", title: "Learn Python", description: "Basics of Python programming.", skills: ["Python"], estimatedTime: "2 weeks", order: 1, status: "completed", progress: 100 },
+    { id: "m2", title: "Statistics & Math", description: "Understand statistics and probability.", skills: ["Statistics"], estimatedTime: "3 weeks", order: 2, status: "in_progress", progress: 60 },
+    { id: "m3", title: "Machine Learning", description: "Intro to ML algorithms.", skills: ["ML"], estimatedTime: "4 weeks", order: 3, status: "not_started" }
+  ],
+  totalProgress: 55
+};
+
 export function RoadmapProgress() {
   const { data: roadmap, isLoading } = useQuery({
     queryKey: ['/api/roadmap/current'],
     staleTime: 2 * 60 * 1000, // Cache for 2 minutes
   });
+
+  const displayRoadmap = roadmap || sampleRoadmap;
 
   if (isLoading) {
     return (
@@ -92,7 +106,7 @@ export function RoadmapProgress() {
   return (
     <div className="bg-card p-6 rounded-xl border border-border">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold">Current Roadmap: {roadmap.title}</h2>
+        <h2 className="text-xl font-semibold">Current Roadmap: {displayRoadmap.title}</h2>
         <Button variant="ghost" className="text-primary hover:underline font-medium" data-testid="button-view-roadmap-details">
           View Details
         </Button>
@@ -103,9 +117,9 @@ export function RoadmapProgress() {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium">Overall Progress</span>
-            <span className="text-sm font-medium">{Math.round(roadmap.totalProgress)}%</span>
+            <span className="text-sm font-medium">{Math.round(displayRoadmap.totalProgress)}%</span>
           </div>
-          <Progress value={roadmap.totalProgress} className="h-2" />
+          <Progress value={displayRoadmap.totalProgress} className="h-2" />
         </div>
 
         {/* Roadmap Timeline */}
@@ -114,12 +128,12 @@ export function RoadmapProgress() {
           <div className="absolute left-6 top-8 bottom-0 w-0.5 bg-border"></div>
           <div 
             className="absolute left-6 top-8 w-0.5 bg-primary transition-all duration-500"
-            style={{ height: `${(roadmap.totalProgress / 100) * 100}px` }}
+            style={{ height: `${(displayRoadmap.totalProgress / 100) * 100}px` }}
           ></div>
           
           {/* Milestones */}
           <div className="space-y-8">
-            {roadmap.milestones.slice(0, 4).map((milestone: Milestone, index: number) => (
+            {displayRoadmap.milestones.slice(0, 4).map((milestone: Milestone, index: number) => (
               <div key={milestone.id} className="flex items-start space-x-4" data-testid={`milestone-${index}`}>
                 <div className={getMilestoneIcon(milestone.status)}></div>
                 <div className="flex-1">
@@ -180,3 +194,5 @@ export function RoadmapProgress() {
     </div>
   );
 }
+
+

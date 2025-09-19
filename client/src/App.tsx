@@ -9,6 +9,12 @@ import Landing from "@/pages/landing";
 import Auth from "@/pages/auth";
 import Onboarding from "@/pages/onboarding";
 import Dashboard from "@/pages/dashboard";
+import CareersPage from "@/pages/careers";
+import ProfilePage from "@/pages/profile";
+import ProfileEditPage from "@/pages/profile-edit";
+import RoadmapPage from "@/pages/roadmap";
+import { ProfileSummary } from "@/components/dashboard/ProfileSummary";
+import { RecentActivity } from "@/components/dashboard/RecentActivity";
 
 function Router() {
   return (
@@ -17,6 +23,10 @@ function Router() {
       <Route path="/auth" component={Auth} />
       <Route path="/onboarding" component={Onboarding} />
       <Route path="/dashboard" component={Dashboard} />
+      <Route path="/careers" component={CareersPage} />
+      <Route path="/roadmap" component={RoadmapPage} />
+      <Route path="/profile" component={ProfilePage} />
+      <Route path="/profile/edit" component={ProfileEditPage} />
       <Route component={NotFound} />
     </Switch>
   );

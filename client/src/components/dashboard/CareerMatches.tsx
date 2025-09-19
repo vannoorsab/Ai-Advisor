@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +22,29 @@ interface CareerMatch {
   industry: string;
   locations: string[];
 }
+
+const sampleMatches = [
+  {
+    id: "1",
+    title: "Data Scientist",
+    description: "Analyze data and build predictive models.",
+    compatibilityScore: 85,
+    salaryRange: { min: 8, max: 20, currency: "INR" },
+    skills: [{ name: "Python", level: "Advanced" }, { name: "ML", level: "Intermediate" }],
+    industry: "IT",
+    locations: ["Bangalore", "Hyderabad"]
+  },
+  {
+    id: "2",
+    title: "Business Analyst",
+    description: "Bridge business needs and technology solutions.",
+    compatibilityScore: 78,
+    salaryRange: { min: 6, max: 15, currency: "INR" },
+    skills: [{ name: "Excel", level: "Advanced" }, { name: "SQL", level: "Intermediate" }],
+    industry: "Consulting",
+    locations: ["Mumbai", "Delhi"]
+  }
+];
 
 export function CareerMatches() {
   const [selectedCareer, setSelectedCareer] = useState<CareerMatch | null>(null);
@@ -69,6 +93,8 @@ export function CareerMatches() {
     return `₹${salaryRange.min}-${salaryRange.max} LPA`;
   };
 
+  const displayMatches = Array.isArray(matches) && matches.length > 0 ? matches : sampleMatches;
+
   return (
     <>
       <div className="bg-card p-6 rounded-xl border border-border">
@@ -80,7 +106,7 @@ export function CareerMatches() {
         </div>
         
         <div className="space-y-4">
-          {Array.isArray(matches) ? matches.slice(0, 3).map((match: CareerMatch) => (
+          {displayMatches.slice(0, 3).map((match: CareerMatch) => (
             <div
               key={match.id}
               onClick={() => setSelectedCareer(match)}
@@ -126,9 +152,10 @@ export function CareerMatches() {
                 </div>
               </div>
             </div>
-          )) : null}
-          
-          {(!matches || !Array.isArray(matches) || matches.length === 0) && (
+          ))}
+
+          {/* Only show "No career matches yet" if both are empty */}
+          {(!matches || !Array.isArray(matches) || matches.length === 0) && sampleMatches.length === 0 && (
             <div className="text-center py-8">
               <i className="fas fa-search text-4xl text-muted-foreground mb-4"></i>
               <h3 className="font-semibold mb-2">No career matches yet</h3>
