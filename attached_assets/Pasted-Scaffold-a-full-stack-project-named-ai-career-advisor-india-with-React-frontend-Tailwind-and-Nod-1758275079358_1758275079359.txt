@@ -1,0 +1,24 @@
+Scaffold a full-stack project named "ai-career-advisor-india" with React frontend (Tailwind) and Node/Express backend. Use Firebase for Authentication, Firestore for DB, and Firebase Storage for resumes. Include:
+
+- Full auth flow with Firebase (email/password + Google).
+- Onboarding wizard UI to collect profile, interests, optional resume upload.
+- Backend endpoints: /api/profile, /api/profile/upload-resume, /api/match, /api/roadmap, /api/progress.
+- Resume upload handling to Firebase Storage and a resume parsing module (pdf-parse or textract).
+- A modular ingestion connector scaffold (stubs) for job boards and educational APIs.
+- Embeddings wrapper with placeholder functions to call Google Vertex AI embeddings (or OpenAI fallback) and a matching engine using cosine similarity stored in Firestore.
+- Roadmap generator that composes an LLM prompt to generate structured JSON roadmaps (provide example prompt).
+- Local offline caching using IndexedDB with sync logic.
+- Firestore security rules (starter).
+- Example environment variables and a README with setup steps.
+
+Scaffold code must be runnable in Replit. Provide minimal working implementations for:
+- Firebase client init (client/src/services/firebaseClient.js)
+- Firebase admin init & token verification (server/src/services/firebaseAdmin.js)
+- Resume parsing module (server/src/services/resumeParser.js)
+- Embedding wrapper (server/src/services/embeddings.js) with comments on where to plug Vertex AI
+- A matching route (server/src/routes/matching.js)
+- A simple React dashboard that shows profile, suggested careers (call /api/match), and roadmap.
+
+Also create a sample dataset for careers (Firestore seeding script) with 10 careers and sample skills + example embeddings (can be random vectors) so the matching endpoint returns results immediately.
+
+Make sure to include comments in code where Google Cloud Generative AI integration should be added, provide secure env usage, and include instructions for generating and loading Firebase service account JSON on Replit (use secrets).
