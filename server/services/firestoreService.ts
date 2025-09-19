@@ -1,4 +1,4 @@
-import { firestore } from './firebaseAdmin';
+import { firestore, isFirebaseInitialized } from './firebaseAdmin';
 import { 
   User, InsertUser, 
   UserProfile, InsertUserProfile,
@@ -10,9 +10,15 @@ import {
 } from '@shared/schema';
 
 export class FirestoreService {
+  private ensureFirestoreInitialized(): void {
+    if (!isFirebaseInitialized || !firestore) {
+      throw new Error('Firestore service not available. Please check your Firebase configuration.');
+    }
+  }
   // User operations
   async createUser(data: InsertUser): Promise<User> {
-    const docRef = firestore.collection('users').doc();
+    this.ensureFirestoreInitialized();
+    const docRef = firestore!.collection('users').doc();
     const user: User = {
       id: docRef.id,
       ...data,
@@ -25,7 +31,8 @@ export class FirestoreService {
   }
   
   async getUserByFirebaseUid(firebaseUid: string): Promise<User | null> {
-    const snapshot = await firestore.collection('users')
+    this.ensureFirestoreInitialized();
+    const snapshot = await firestore!.collection('users')
       .where('firebaseUid', '==', firebaseUid)
       .limit(1)
       .get();
@@ -35,13 +42,15 @@ export class FirestoreService {
   }
   
   async getUserById(id: string): Promise<User | null> {
-    const doc = await firestore.collection('users').doc(id).get();
+    this.ensureFirestoreInitialized();
+    const doc = await firestore!.collection('users').doc(id).get();
     return doc.exists ? doc.data() as User : null;
   }
   
   async updateUser(id: string, data: Partial<User>): Promise<User> {
+    this.ensureFirestoreInitialized();
     const updates = { ...data, updatedAt: new Date() };
-    await firestore.collection('users').doc(id).update(updates);
+    await firestore!.collection('users').doc(id).update(updates);
     
     const updated = await this.getUserById(id);
     if (!updated) throw new Error('User not found after update');
@@ -50,7 +59,8 @@ export class FirestoreService {
   
   // User Profile operations
   async createUserProfile(data: InsertUserProfile): Promise<UserProfile> {
-    const docRef = firestore.collection('userProfiles').doc();
+    this.ensureFirestoreInitialized();
+    const docRef = firestore!.collection('userProfiles').doc();
     const profile: UserProfile = {
       id: docRef.id,
       ...data,
@@ -63,7 +73,8 @@ export class FirestoreService {
   }
   
   async getUserProfile(userId: string): Promise<UserProfile | null> {
-    const snapshot = await firestore.collection('userProfiles')
+    this.ensureFirestoreInitialized();
+    const snapshot = await firestore!.collection('userProfiles')
       .where('userId', '==', userId)
       .limit(1)
       .get();
@@ -73,7 +84,8 @@ export class FirestoreService {
   }
   
   async updateUserProfile(userId: string, data: Partial<UserProfile>): Promise<UserProfile> {
-    const snapshot = await firestore.collection('userProfiles')
+    this.ensureFirestoreInitialized();
+    const snapshot = await firestore!.collection('userProfiles')
       .where('userId', '==', userId)
       .limit(1)
       .get();

@@ -62,7 +62,8 @@ export class ResumeParser {
   
   async parseBuffer(buffer: Buffer): Promise<ParsedResumeData> {
     try {
-      const data = await pdfParse(buffer);
+      const parse = await pdfParse();
+      const data = await parse(buffer);
       const text = data.text;
       
       return {

@@ -43,6 +43,10 @@ export { isFirebaseInitialized };
 
 // Verify Firebase ID token
 export async function verifyIdToken(idToken: string): Promise<admin.auth.DecodedIdToken> {
+  if (!isFirebaseInitialized || !auth) {
+    throw new Error('Firebase authentication service not available');
+  }
+  
   try {
     return await auth.verifyIdToken(idToken);
   } catch (error) {
@@ -52,6 +56,10 @@ export async function verifyIdToken(idToken: string): Promise<admin.auth.Decoded
 
 // Create custom token (if needed)
 export async function createCustomToken(uid: string): Promise<string> {
+  if (!isFirebaseInitialized || !auth) {
+    throw new Error('Firebase authentication service not available');
+  }
+  
   return await auth.createCustomToken(uid);
 }
 
