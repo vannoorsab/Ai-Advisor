@@ -80,7 +80,7 @@ export function CareerMatches() {
         </div>
         
         <div className="space-y-4">
-          {matches?.slice(0, 3).map((match: CareerMatch) => (
+          {Array.isArray(matches) ? matches.slice(0, 3).map((match: CareerMatch) => (
             <div
               key={match.id}
               onClick={() => setSelectedCareer(match)}
@@ -126,9 +126,9 @@ export function CareerMatches() {
                 </div>
               </div>
             </div>
-          ))}
+          )) : null}
           
-          {!matches?.length && (
+          {(!matches || !Array.isArray(matches) || matches.length === 0) && (
             <div className="text-center py-8">
               <i className="fas fa-search text-4xl text-muted-foreground mb-4"></i>
               <h3 className="font-semibold mb-2">No career matches yet</h3>
