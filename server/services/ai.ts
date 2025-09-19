@@ -152,7 +152,7 @@ class AIService {
     }
     
     if (this.providers.length === 0) {
-      throw new Error('No AI providers available. Please configure GEMINI_API_KEY or OPENAI_API_KEY');
+      console.warn('No AI providers available. Please configure GEMINI_API_KEY or OPENAI_API_KEY. Some features may be limited.');
     }
   }
   

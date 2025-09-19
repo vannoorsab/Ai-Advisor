@@ -1,4 +1,8 @@
-import * as pdfParse from 'pdf-parse';
+// Dynamic import to avoid initialization issues with pdf-parse
+const pdfParse = async () => {
+  const module = await import('pdf-parse');
+  return module.default || module;
+};
 import { storage } from './firebaseAdmin';
 
 interface ParsedResumeData {

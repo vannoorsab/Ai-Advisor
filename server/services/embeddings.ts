@@ -110,7 +110,7 @@ class EmbeddingService {
     }
     
     if (this.providers.length === 0) {
-      throw new Error('No embedding providers available. Please configure GEMINI_API_KEY or OPENAI_API_KEY');
+      console.warn('No embedding providers available. Please configure GEMINI_API_KEY or OPENAI_API_KEY. Some features may be limited.');
     }
   }
   
